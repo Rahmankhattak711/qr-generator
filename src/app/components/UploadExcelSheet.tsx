@@ -1,24 +1,26 @@
 "use client";
 import { useState } from "react";
 import * as XLSX from "xlsx";
-import { QRCard } from "./QRCard";
+import { useReactToPrint } from "react-to-print";
+import { useRef } from "react";
+import InputField from "./InputField";
+import PrintSideBar from "./PrintSideBar";
 
 export default function UploadExcelSheet() {
   const [data, setData] = useState<any>([]);
   const [columns, setColumns] = useState<Record<string, string>>({
-    name: "",
-    email: "",
-    url: "",
+    name: "Nom",
+    postCode: "Code_postal",
+    Numéro_magasin: "Numéro_magasin",
   });
   const [canGenerate, setCanGenerate] = useState(false);
+  const [fileUploaded, setFileUploaded] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({ contentRef });
 
   const generateQR = () => {
-    const _canGenerate = Object.keys(columns).every((key) => {
-      if (columns[key] === "") {
-        return false;
-      }
-      return true;
-    });
+    const _canGenerate =
+      Object.keys(columns).every((key) => columns[key] !== "") && fileUploaded;
 
     setCanGenerate(_canGenerate);
   };
@@ -47,77 +49,99 @@ export default function UploadExcelSheet() {
       );
 
       setData(dataAsObjects);
+      setFileUploaded(true);
     };
     reader.readAsBinaryString(file);
   };
 
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+    generateQR();
+  };
+
   return (
-    <div className="w-full bg-gray-800 min-h-screen py-10 text-white">
-      <div className="flex  items-center justify-center flex-col w-full h-auto py-10">
-        <input
-          className="p-2 w-[60%] bg-gray-600 rounded-md mb-6"
-          type="file"
-          accept=".xlsx, .xls"
-          placeholder="Upload Excel Sheet"
-          onChange={handleFileUpload}
+    <div className="w-full flex text-white">
+      <div className="w-full">
+        <PrintSideBar
+          data={data}
+          columns={columns}
+          canGenerate={canGenerate}
+          contentRef={contentRef}
+          reactToPrintFn={reactToPrintFn}
         />
+      </div>
+      <div className="flex w-[450px] relative items-center flex-col h-screen py-10">
+        <div className="sticky top-20 mt-6 w-[80%]">
+          <p className="text-sm">Total Rows: {data.length || 0}</p>
+          <h1 className="text-3xl my-6">QR Code Generator</h1>
 
-        <form
-          className="mt-6 flex flex-col gap-4 w-[60%]"
-          onSubmit={(e) => {
-            e.preventDefault();
-            generateQR();
-          }}
-        >
-          <input
-            className="flex-1 border-none bg-gray-600 text-white rounded-md p-2"
-            type="text"
-            placeholder="name column"
-            onChange={(e) =>
-              setColumns((prev) => ({ ...prev, name: e.target.value }))
-            }
-            value={columns.name}
+          <InputField
+            className="cursor-pointer p-2 rounded-md w-full bg-gray-700 text-center"
+            type="file"
+            accept=".xlsx, .xls"
+            placeholder="Upload Excel Sheet"
+            onChange={handleFileUpload}
           />
-          <input
-            className="flex-1 border-none bg-gray-600 text-white rounded-md p-2"
-            type="text"
-            placeholder="email column"
-            onChange={(e) =>
-              setColumns((prev) => ({ ...prev, email: e.target.value }))
-            }
-            value={columns.email}
-          />
-          <input
-            className="flex-1 border-none bg-gray-600 text-white rounded-md p-2"
-            type="text"
-            placeholder="url column"
-            onChange={(e) =>
-              setColumns((prev) => ({ ...prev, url: e.target.value }))
-            }
-            value={columns.url}
-          />
-          <button
-            type="submit"
-            className="border-black rounded-md bg-gray-600 p-2"
-          >
-            Generate QR
-          </button>
-        </form>
 
-        {canGenerate
-          ? data.map((row : any, index : number) => {
-              return (
-               <div className="flex gap-2">
-                 <QRCard
-                  key={index}
-                  name={row[columns.name]}
-                  email={row[columns.email]}
-                  url={row[columns.url]}
+          {fileUploaded && (
+            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="name">Name Column</label>
+                <InputField
+                  type="text"
+                  placeholder="name"
+                  onChange={(e: any) =>
+                    setColumns((prev) => {
+                      const updated = { ...prev, name: e.target.value };
+                      generateQR();
+                      return updated;
+                    })
+                  }
+                  value={columns.name}
                 />
-               </div>
-              );
-            })
-          : null}
+
+                <label htmlFor="postCode">PostCode Column</label>
+                <InputField
+                  type="text"
+                  placeholder="postCode"
+                  onChange={(e: any) =>
+                    setColumns((prev) => {
+                      const updated = { ...prev, postCode: e.target.value };
+                      generateQR();
+                      return updated;
+                    })
+                  }
+                  value={columns.postCode}
+                />
+
+                <label htmlFor="Numéro_magasin">Numéro_magasin Column</label>
+                <InputField
+                  type="text"
+                  placeholder="Numéro_magasin"
+                  onChange={(e: any) =>
+                    setColumns((prev) => {
+                      const updated = {
+                        ...prev,
+                        Numéro_magasin: e.target.value,
+                      };
+                      generateQR();
+                      return updated;
+                    })
+                  }
+                  value={columns.Numéro_magasin}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={!canGenerate}
+                className="border-black disabled:bg-gray-300 w-full rounded-md bg-gray-600 p-2"
+              >
+                Generate
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,10 +1,10 @@
-import React from 'react'
-import UploadExcelSheet from './components/UploadExcelSheet'
+import React from "react";
+import UploadExcelSheet from "./components/UploadExcelSheet";
 
 export default function page() {
   return (
     <div>
-      <UploadExcelSheet/>
+      <UploadExcelSheet />
     </div>
-  )
+  );
 }
