@@ -9,8 +9,6 @@ export const QRCard: React.FC<{
   const color = process.env.TEXTCOLOR || "#000000";
   const bgcolor = process.env.BGCOLOR || "#ffffff";
 
-  console.log("QRImage:", props);
-
   return (
     <div className="flex gap-5 flex-col items-center p-4 bg-white shadow">
       <QRCodeCanvas

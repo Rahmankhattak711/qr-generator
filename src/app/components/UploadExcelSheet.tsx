@@ -5,15 +5,11 @@ import { QRCard } from "./QRCard";
 
 export default function UploadExcelSheet() {
   const [data, setData] = useState<any>([]);
-  const [qrValue, setQrValue] = useState("");
-  const [userId, setUserId] = useState("");
-
   const [columns, setColumns] = useState<Record<string, string>>({
     name: "",
     email: "",
     url: "",
   });
-
   const [canGenerate, setCanGenerate] = useState(false);
 
   const generateQR = () => {
@@ -26,9 +22,6 @@ export default function UploadExcelSheet() {
 
     setCanGenerate(_canGenerate);
   };
-
-  const qrUrl = `https://github.com/${qrValue}`;
-  console.log("QR:", qrUrl);
 
   const handleFileUpload = (e: any) => {
     const file = e.target.files?.[0];
@@ -43,7 +36,7 @@ export default function UploadExcelSheet() {
       const sheetData: any[][] = XLSX.utils.sheet_to_json(worksheet, {
         header: 1,
       });
-      console.log("Sheet Data:", sheetData);
+
       const headers = sheetData[0];
       const rows = sheetData.slice(1);
       const dataAsObjects = rows.map((row) =>
@@ -52,7 +45,7 @@ export default function UploadExcelSheet() {
           return obj;
         }, {} as { [key: string]: any })
       );
-      console.log("Data as Objects:", dataAsObjects);
+
       setData(dataAsObjects);
     };
     reader.readAsBinaryString(file);
@@ -112,8 +105,7 @@ export default function UploadExcelSheet() {
         </form>
 
         {canGenerate
-          ? data.map((row, index) => {
-              console.log("Row:", row);
+          ? data.map((row : any, index : number) => {
               return (
                <div className="flex gap-2">
                  <QRCard
