@@ -6,12 +6,16 @@ export const QRCard: React.FC<{
   Numéro_magasin: string;
   Code_postal: string;
   url: string;
+  appName?: string;
 }> = (props) => {
   const color = process.env.TEXT_COLOR || "black";
   const bgcolor = process.env.BG_COLOR || "#F9F7FA";
 
   return (
     <div className="relative flex justify-center flex-col items-center rounded-md gap-4 h-[32rem] w-72 bg-[#F9F7FA] border-[1px] border-gray-300 overflow-hidden">
+      <h1 className="text-md font-extralight text-gray-100 z-1000">
+        {props.appName}
+      </h1>
       <h1 className="text-md font-bold text-gray-100 z-500 mb-6">
         {props.name}
       </h1>

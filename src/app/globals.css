@@ -1,6 +1,21 @@
 @import "tailwindcss";
 
 body {
-  background: #1e2939;
-  color: white;
+  background-color: #1f2937;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+}
+
+@media print {
+  .print {
+    width: 100% !important;
+    height: 100vh !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 1fr !important;
+    place-items: center !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-direction: column !important;
+  }
 }

@@ -1,12 +1,12 @@
 "use client";
-import { useState } from "react";
-import * as XLSX from "xlsx";
+import { useState, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
-import { useRef } from "react";
 import InputField from "./InputField";
 import PrintSideBar from "./PrintSideBar";
 import FormQr from "./FormQr";
-import '../globals.css'
+import Form from "./Form";
+import { handleFileUpload } from "@/utils";
+import '../globals.css';
 
 export default function UploadExcelSheet() {
   const [data, setData] = useState<any>("");
@@ -21,40 +21,10 @@ export default function UploadExcelSheet() {
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
 
- const generateQR = () => {
+  const generateQR = () => {
     const _canGenerate =
       Object.keys(columns).every((key) => columns[key] !== "") && fileUploaded;
-
     setCanGenerate(_canGenerate);
-  };
-
-  const handleFileUpload = (e: any) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const binaryStr = evt.target?.result;
-      const workbook = XLSX.read(binaryStr, { type: "binary" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const sheetData: any[][] = XLSX.utils.sheet_to_json(worksheet, {
-        header: 1,
-      });
-
-      const headers = sheetData[0];
-      const rows = sheetData.slice(1);
-      const dataAsObjects = rows.map((row) =>
-        headers.reduce((obj, header, index) => {
-          obj[header] = row[index];
-          return obj;
-        }, {} as { [key: string]: any })
-      );
-
-      setData(dataAsObjects);
-      setFileUploaded(true);
-    };
-    reader.readAsBinaryString(file);
   };
 
   const handleSubmit = (e: any) => {
@@ -63,118 +33,52 @@ export default function UploadExcelSheet() {
   };
 
   return (
-    <div className="w-full flex gap-10 text-white p-10 ">
-      <div ref={contentRef} className="w-1/2 flex gap-4 ">
-        <PrintSideBar
-          data={data}
-          columns={
-            columns as {
-              name: string;
-              Code_postal: string;
-              Numéro_magasin: string;
-              url?: string;
-            }
-          }
-          canGenerate={canGenerate}
-        />
-
+    <div className="w-full min-h-screen bg-gray-900 text-white flex flex-col md:flex-row gap-8 p-6 md:p-10">
+      {/* QR Code Display Section */}
+      <div ref={contentRef} className="w-full md:w-1/2 flex flex-col items-center justify-start gap-6">
         <FormQr
           data={data}
-          columns={
-            columns as {
-              name: string;
-              Code_postal: string;
-              Numéro_magasin: string;
-              url?: string;
-              form: string;
-            }
-          }
+          columns={{
+            appName: "Candidature spontanée",
+            name: columns.name,
+            Code_postal: columns.Code_postal,
+            Numéro_magasin: columns.Numéro_magasin,
+            form: columns.form,
+          }}
           canGenerate={canGenerate}
         />
       </div>
-      <div className="flex w-[500px] sticky h-screen items-center flex-col py-10">
-        <div className="sticky top-20 mt-6 w-[80%]">
-          <p className="text-sm">Total Rows: {data.length || 0}</p>
-          <h1 className="text-3xl my-6">QR Code Generator</h1>
+
+      {/* Sticky Sidebar */}
+      <div className="w-full md:w-[400px] lg:w-[500px] sticky top-0 h-fit md:h-screen flex flex-col items-center py-8 bg-gray-800 shadow-lg">
+        <div className="w-[85%] flex flex-col gap-6">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-white mb-4">QR Code Generator</h1>
+            <p className="text-sm text-gray-300">Total Rows: {data.length || 0}</p>
+          </div>
 
           <InputField
-            className="cursor-pointer p-2 rounded-md w-full bg-gray-700 text-center"
+            className="cursor-pointer p-3 rounded-lg w-full bg-gray-700 text-white text-center hover:bg-gray-600 transition duration-200"
             type="file"
             accept=".xlsx, .xls"
             placeholder="Upload Excel Sheet"
-            onChange={handleFileUpload}
+            onChange={(e: any) =>
+              handleFileUpload({ e, setData, setFileUploaded })
+            }
           />
 
           {fileUploaded && (
-            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="name">Name Column</label>
-                <InputField
-                  type="text"
-                  placeholder="name"
-                  onChange={(e: any) =>
-                    setColumns((prev) => {
-                      const updated = { ...prev, name: e.target.value };
-                      generateQR();
-                      return updated;
-                    })
-                  }
-                  value={columns.name}
-                />
-
-                <label htmlFor="Code_postal">Code_postal Column</label>
-                <InputField
-                  type="text"
-                  placeholder="Code_postal"
-                  onChange={(e: any) =>
-                    setColumns((prev) => {
-                      const updated = { ...prev, Code_postal: e.target.value };
-                      generateQR();
-                      return updated;
-                    })
-                  }
-                  value={columns.Code_postal}
-                />
-
-                <label htmlFor="Numéro_magasin">Numéro_magasin Column</label>
-                <InputField
-                  type="text"
-                  placeholder="Numéro_magasin"
-                  onChange={(e: any) =>
-                    setColumns((prev) => {
-                      const updated = {
-                        ...prev,
-                        Numéro_magasin: e.target.value,
-                      };
-                      generateQR();
-                      return updated;
-                    })
-                  }
-                  value={columns.Numéro_magasin}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={!canGenerate}
-                className="border-black disabled:bg-gray-300 cursor-pointer w-full rounded-md bg-gray-600 p-2"
-              >
-                Generate QR Codes
-              </button>
-
-              <div>
-                {canGenerate && (
-                  <div className="mb-6">
-                    <button
-                      onClick={reactToPrintFn}
-                      className="w-full rounded-md bg-[#633654] cursor-pointer text-white p-2 "
-                    >
-                      Print QR Codes
-                    </button>
-                  </div>
-                )}
-              </div>
-            </form>
+            <Form
+              {...{
+                data,
+                columns,
+                setColumns,
+                generateQR,
+                handleSubmit,
+                canGenerate,
+                reactToPrintFn,
+              }}
+            />
           )}
         </div>
       </div>
