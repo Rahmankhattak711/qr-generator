@@ -7,11 +7,11 @@ import InputField from "./InputField";
 import PrintSideBar from "./PrintSideBar";
 
 export default function UploadExcelSheet() {
-  const [data, setData] = useState<any>([]);
+  const [data, setData] = useState<any>('');
   const [columns, setColumns] = useState<Record<string, string>>({
-    name: "Nom",
-    postCode: "Code_postal",
+    name: "",
     Numéro_magasin: "Numéro_magasin",
+    Code_postal: "Code_postal",
   });
   const [canGenerate, setCanGenerate] = useState(false);
   const [fileUploaded, setFileUploaded] = useState(false);
@@ -64,9 +64,16 @@ export default function UploadExcelSheet() {
       <div className="w-full">
         <PrintSideBar
           data={data}
-          columns={columns}
+          columns={
+            columns as {
+              name: string;
+              Code_postal: string;
+              Numéro_magasin: string;
+              url?: string;
+            }
+          }
           canGenerate={canGenerate}
-          contentRef={contentRef}
+          contentRef={contentRef as React.RefObject<HTMLDivElement>}
           reactToPrintFn={reactToPrintFn}
         />
       </div>
@@ -100,18 +107,18 @@ export default function UploadExcelSheet() {
                   value={columns.name}
                 />
 
-                <label htmlFor="postCode">PostCode Column</label>
+                <label htmlFor="Code_postal">Code_postal Column</label>
                 <InputField
                   type="text"
-                  placeholder="postCode"
+                  placeholder="Code_postal"
                   onChange={(e: any) =>
                     setColumns((prev) => {
-                      const updated = { ...prev, postCode: e.target.value };
+                      const updated = { ...prev, Code_postal: e.target.value };
                       generateQR();
                       return updated;
                     })
                   }
-                  value={columns.postCode}
+                  value={columns.Code_postal}
                 />
 
                 <label htmlFor="Numéro_magasin">Numéro_magasin Column</label>

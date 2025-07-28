@@ -1,7 +1,20 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { QRCard } from "./QRCard";
 import "../globals.css";
+
+interface Props {
+  data: any[];
+  columns: {
+    name: string;
+    Code_postal: string;
+    Numéro_magasin: string;
+    url?: string;
+  };
+  canGenerate: boolean;
+  contentRef: React.RefObject<HTMLDivElement>;
+  reactToPrintFn: () => void;
+}
 
 export default function PrintSideBar({
   data,
@@ -9,39 +22,43 @@ export default function PrintSideBar({
   canGenerate,
   contentRef,
   reactToPrintFn,
-}: any) {
+}: Props) {
   return (
-    <div className="bg-gray-700 h-screen">
-      <div className="flex flex-col h-auto gap-4 bg-gray-700 p-4">
-        {canGenerate ? (
+    <div className="bg-gray-700 min-h-screen w-full overflow-auto p-4">
+      {/* Print Button */}
+      {canGenerate && (
+        <div className="mb-6">
           <button
             onClick={reactToPrintFn}
-            className="border-black w-44 rounded-md bg-gray-600 p-2"
+            className="w-44 rounded-md bg-[#7A4B68] text-white p-2 shadow hover:bg-[#633654]"
           >
             Print QR Codes
           </button>
-        ) : null}
-
-        <div
-          className=" w-full flex gap-2 flex-wrap items-center justify-center py-4 "
-          ref={contentRef}
-        >
-          {canGenerate
-            ? data.map((row: any, index: number) => {
-                return (
-                  <div key={index} className="h-screen flex print ">
-                    <QRCard
-                      // logo={row[columns.logo]}
-                      key={index}
-                      name={row[columns.name]}
-                      Numéro_magasin={row[columns.Numéro_magasin]}
-                      postCode={row[columns.postalCode]}
-                    />
-                  </div>
-                );
-              })
-            : null}
         </div>
+      )}
+
+      {/* QR Code Cards */}
+      <div
+        ref={contentRef}
+        className="grid grid-cols-1 gap-6 justify-items-center"
+      >
+        {canGenerate &&
+          data.map((row, index) => {
+            const name = row[columns.name];
+            const mg = row[columns.Numéro_magasin];
+            const Code_postal = row[columns.Code_postal];
+            const url = `https://talent.lavieenrose.com/${mg}/${Code_postal}`;
+
+            return (
+              <QRCard
+                key={index}
+                name={name}
+                Numéro_magasin={mg}
+                Code_postal={Code_postal}
+                url={url}
+              />
+            );
+          })}
       </div>
     </div>
   );
