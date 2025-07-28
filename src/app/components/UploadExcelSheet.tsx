@@ -5,20 +5,23 @@ import { useReactToPrint } from "react-to-print";
 import { useRef } from "react";
 import InputField from "./InputField";
 import PrintSideBar from "./PrintSideBar";
+import FormQr from "./FormQr";
+import '../globals.css'
 
 export default function UploadExcelSheet() {
-  const [data, setData] = useState<any>('');
+  const [data, setData] = useState<any>("");
   const [columns, setColumns] = useState<Record<string, string>>({
     name: "",
     Numéro_magasin: "Numéro_magasin",
     Code_postal: "Code_postal",
+    form: "form",
   });
   const [canGenerate, setCanGenerate] = useState(false);
   const [fileUploaded, setFileUploaded] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
 
-  const generateQR = () => {
+ const generateQR = () => {
     const _canGenerate =
       Object.keys(columns).every((key) => columns[key] !== "") && fileUploaded;
 
@@ -60,8 +63,8 @@ export default function UploadExcelSheet() {
   };
 
   return (
-    <div className="w-full flex text-white">
-      <div className="w-full">
+    <div className="w-full flex gap-10 text-white p-10 ">
+      <div ref={contentRef} className="w-1/2 flex gap-4 ">
         <PrintSideBar
           data={data}
           columns={
@@ -73,11 +76,23 @@ export default function UploadExcelSheet() {
             }
           }
           canGenerate={canGenerate}
-          contentRef={contentRef as React.RefObject<HTMLDivElement>}
-          reactToPrintFn={reactToPrintFn}
+        />
+
+        <FormQr
+          data={data}
+          columns={
+            columns as {
+              name: string;
+              Code_postal: string;
+              Numéro_magasin: string;
+              url?: string;
+              form: string;
+            }
+          }
+          canGenerate={canGenerate}
         />
       </div>
-      <div className="flex w-[450px] relative items-center flex-col h-screen py-10">
+      <div className="flex w-[500px] sticky h-screen items-center flex-col py-10">
         <div className="sticky top-20 mt-6 w-[80%]">
           <p className="text-sm">Total Rows: {data.length || 0}</p>
           <h1 className="text-3xl my-6">QR Code Generator</h1>
@@ -142,10 +157,23 @@ export default function UploadExcelSheet() {
               <button
                 type="submit"
                 disabled={!canGenerate}
-                className="border-black disabled:bg-gray-300 w-full rounded-md bg-gray-600 p-2"
+                className="border-black disabled:bg-gray-300 cursor-pointer w-full rounded-md bg-gray-600 p-2"
               >
-                Generate
+                Generate QR Codes
               </button>
+
+              <div>
+                {canGenerate && (
+                  <div className="mb-6">
+                    <button
+                      onClick={reactToPrintFn}
+                      className="w-full rounded-md bg-[#633654] cursor-pointer text-white p-2 "
+                    >
+                      Print QR Codes
+                    </button>
+                  </div>
+                )}
+              </div>
             </form>
           )}
         </div>
